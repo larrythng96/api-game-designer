@@ -1,0 +1,1876 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0"
+		/>
+		<title>Game Design Workshop — Group Activity</title>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;family=Syne:wght@400;600;800&amp;display=swap"
+			rel="stylesheet"
+		/>
+		<style>
+			:root {
+				--bg: #0d0d0f;
+				--surface: #16161a;
+				--surface2: #1e1e24;
+				--border: #2a2a35;
+				--accent: #00e5a0;
+				--accent2: #ff6b35;
+				--accent3: #7c6fff;
+				--text: #e8e8f0;
+				--muted: #888899;
+				--mono: 'Space Mono', monospace;
+				--sans: 'Syne', sans-serif;
+			}
+
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				background: var(--bg);
+				color: var(--text);
+				font-family: var(--sans);
+				min-height: 100vh;
+				overflow-x: hidden;
+			}
+
+			body::before {
+				content: '';
+				position: fixed;
+				inset: 0;
+				background-image:
+					linear-gradient(var(--border) 1px, transparent 1px),
+					linear-gradient(90deg, var(--border) 1px, transparent 1px);
+				background-size: 40px 40px;
+				opacity: 0.3;
+				pointer-events: none;
+				z-index: 0;
+			}
+
+			.container {
+				max-width: 960px;
+				margin: 0 auto;
+				padding: 0 24px 80px;
+				position: relative;
+				z-index: 1;
+			}
+
+			header {
+				padding: 56px 0 48px;
+				border-bottom: 1px solid var(--border);
+				margin-bottom: 48px;
+			}
+
+			.tag {
+				display: inline-block;
+				font-family: var(--mono);
+				font-size: 11px;
+				letter-spacing: 0.12em;
+				color: var(--accent);
+				background: rgba(0, 229, 160, 0.08);
+				border: 1px solid rgba(0, 229, 160, 0.25);
+				padding: 4px 12px;
+				border-radius: 2px;
+				margin-bottom: 20px;
+				text-transform: uppercase;
+			}
+
+			h1 {
+				font-size: clamp(28px, 5vw, 48px);
+				font-weight: 800;
+				line-height: 1.1;
+				letter-spacing: -0.02em;
+			}
+
+			h1 span {
+				color: var(--accent);
+			}
+
+			.subtitle {
+				color: var(--muted);
+				font-size: 15px;
+				margin-top: 12px;
+				font-family: var(--mono);
+			}
+
+			.q-nav {
+				display: flex;
+				gap: 12px;
+				margin-bottom: 40px;
+				flex-wrap: wrap;
+			}
+
+			.q-btn {
+				font-family: var(--mono);
+				font-size: 13px;
+				padding: 10px 20px;
+				border-radius: 4px;
+				border: 1px solid var(--border);
+				background: var(--surface);
+				color: var(--muted);
+				cursor: pointer;
+				transition: all 0.2s;
+				letter-spacing: 0.04em;
+			}
+			.q-btn.active,
+			.q-btn:hover {
+				border-color: var(--accent);
+				color: var(--accent);
+				background: rgba(0, 229, 160, 0.06);
+			}
+
+			.panel {
+				display: none;
+			}
+			.panel.active {
+				display: block;
+				animation: fadeUp 0.35s ease;
+			}
+
+			@keyframes fadeUp {
+				from {
+					opacity: 0;
+					transform: translateY(16px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.card {
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				padding: 28px;
+				margin-bottom: 20px;
+			}
+
+			.card-header {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				margin-bottom: 20px;
+			}
+
+			.card-icon {
+				width: 36px;
+				height: 36px;
+				border-radius: 6px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 16px;
+				flex-shrink: 0;
+			}
+			.icon-green {
+				background: rgba(0, 229, 160, 0.12);
+			}
+			.icon-orange {
+				background: rgba(255, 107, 53, 0.12);
+			}
+			.icon-purple {
+				background: rgba(124, 111, 255, 0.12);
+			}
+
+			.card-title {
+				font-size: 16px;
+				font-weight: 700;
+			}
+			.card-sub {
+				font-family: var(--mono);
+				font-size: 11px;
+				color: var(--muted);
+				margin-top: 2px;
+			}
+
+			.field-group {
+				display: grid;
+				gap: 14px;
+			}
+
+			.field-row {
+				display: grid;
+				grid-template-columns: 140px 1fr;
+				gap: 12px;
+				align-items: start;
+			}
+			@media (max-width: 600px) {
+				.field-row {
+					grid-template-columns: 1fr;
+					gap: 4px;
+				}
+			}
+
+			.field-label {
+				font-family: var(--mono);
+				font-size: 11px;
+				color: var(--accent);
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				padding-top: 10px;
+			}
+
+			input,
+			textarea,
+			select {
+				width: 100%;
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				border-radius: 4px;
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 13px;
+				padding: 9px 14px;
+				outline: none;
+				transition: border-color 0.2s;
+				resize: vertical;
+			}
+			input:focus,
+			textarea:focus,
+			select:focus {
+				border-color: var(--accent);
+			}
+			input::placeholder,
+			textarea::placeholder {
+				color: #444458;
+			}
+			select option {
+				background: var(--surface2);
+			}
+
+			/* ENTITY TABLE */
+			.entity-table {
+				width: 100%;
+				border-collapse: collapse;
+				font-family: var(--mono);
+				font-size: 12px;
+			}
+			.entity-table th {
+				text-align: left;
+				padding: 10px 14px;
+				border-bottom: 1px solid var(--border);
+				color: var(--accent);
+				font-size: 10px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+			}
+			.entity-table td {
+				padding: 10px 14px;
+				border-bottom: 1px solid #1e1e24;
+				vertical-align: top;
+			}
+			.entity-table tr:last-child td {
+				border-bottom: none;
+			}
+
+			.type-badge {
+				display: inline-block;
+				padding: 2px 8px;
+				border-radius: 3px;
+				font-size: 10px;
+				letter-spacing: 0.06em;
+			}
+			.type-string {
+				background: rgba(0, 229, 160, 0.1);
+				color: var(--accent);
+			}
+			.type-int {
+				background: rgba(255, 107, 53, 0.1);
+				color: var(--accent2);
+			}
+			.type-boolean {
+				background: rgba(124, 111, 255, 0.1);
+				color: var(--accent3);
+			}
+			.type-array {
+				background: rgba(255, 200, 60, 0.1);
+				color: #ffc83c;
+			}
+			.type-uuid {
+				background: rgba(0, 229, 160, 0.06);
+				color: #44bb88;
+			}
+			.type-date {
+				background: rgba(255, 80, 80, 0.08);
+				color: #ff8080;
+			}
+
+			.field-editor-row {
+				display: grid;
+				grid-template-columns: 1fr 110px 1fr 32px;
+				gap: 8px;
+				margin-bottom: 0;
+				align-items: center;
+				padding: 8px 0;
+				border-bottom: 1px solid rgba(42, 42, 53, 0.5);
+			}
+			.field-editor-row:last-child {
+				border-bottom: none;
+			}
+			@media (max-width: 600px) {
+				.field-editor-row {
+					grid-template-columns: 1fr 1fr;
+				}
+			}
+
+			.field-col-headers {
+				display: grid;
+				grid-template-columns: 1fr 110px 1fr 32px;
+				gap: 8px;
+				padding: 0 0 6px;
+				margin-bottom: 4px;
+				border-bottom: 1px solid var(--border);
+			}
+			.field-col-headers span {
+				font-family: var(--mono);
+				font-size: 9px;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				color: var(--muted);
+			}
+			@media (max-width: 600px) {
+				.field-col-headers {
+					grid-template-columns: 1fr 1fr;
+				}
+				.field-col-headers span:nth-child(3),
+				.field-col-headers span:nth-child(4) {
+					display: none;
+				}
+			}
+
+			.del-btn {
+				background: rgba(255, 80, 80, 0.1);
+				border: 1px solid rgba(255, 80, 80, 0.2);
+				color: #ff5050;
+				border-radius: 4px;
+				width: 32px;
+				height: 32px;
+				cursor: pointer;
+				font-size: 16px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: background 0.2s;
+				flex-shrink: 0;
+			}
+			.del-btn:hover {
+				background: rgba(255, 80, 80, 0.2);
+			}
+
+			.add-btn {
+				font-family: var(--mono);
+				font-size: 12px;
+				padding: 8px 16px;
+				border-radius: 4px;
+				border: 1px dashed var(--border);
+				background: transparent;
+				color: var(--muted);
+				cursor: pointer;
+				transition: all 0.2s;
+				letter-spacing: 0.04em;
+				margin-top: 8px;
+			}
+			.add-btn:hover {
+				border-color: var(--accent);
+				color: var(--accent);
+			}
+
+			/* METHOD BADGE */
+			.method-badge {
+				font-family: var(--mono);
+				font-size: 11px;
+				font-weight: 700;
+				padding: 4px 10px;
+				border-radius: 4px;
+				letter-spacing: 0.06em;
+				appearance: none;
+				-webkit-appearance: none;
+				cursor: pointer;
+				outline: none;
+			}
+			.GET {
+				background: rgba(0, 229, 160, 0.15);
+				color: var(--accent);
+				border: 1px solid rgba(0, 229, 160, 0.3);
+			}
+			.POST {
+				background: rgba(255, 107, 53, 0.15);
+				color: var(--accent2);
+				border: 1px solid rgba(255, 107, 53, 0.3);
+			}
+			.PUT {
+				background: rgba(124, 111, 255, 0.15);
+				color: var(--accent3);
+				border: 1px solid rgba(124, 111, 255, 0.3);
+			}
+			.DELETE {
+				background: rgba(255, 80, 80, 0.15);
+				color: #ff5050;
+				border: 1px solid rgba(255, 80, 80, 0.3);
+			}
+			.PATCH {
+				background: rgba(255, 200, 60, 0.15);
+				color: #ffc83c;
+				border: 1px solid rgba(255, 200, 60, 0.3);
+			}
+
+			/* API CARD */
+			.api-card {
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				overflow: hidden;
+			}
+
+			.api-card-header {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				padding: 14px 18px;
+				cursor: pointer;
+				user-select: none;
+				transition: background 0.2s;
+			}
+			.api-card-header .method-badge {
+				flex-shrink: 0;
+			}
+			.api-card-header:hover {
+				background: rgba(255, 255, 255, 0.02);
+			}
+
+			.api-path-input {
+				flex: 1;
+				min-width: 0;
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: 4px;
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 13px;
+				padding: 6px 12px;
+				outline: none;
+				transition: border-color 0.2s;
+				resize: none;
+			}
+			.api-path-input:focus {
+				border-color: var(--accent);
+			}
+
+			.api-card-body {
+				display: none;
+			}
+			.api-card-body.open {
+				display: block;
+			}
+
+			.api-body-inner {
+				padding: 16px 18px 18px;
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+			}
+
+			.api-desc-input {
+				width: 100%;
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				border-radius: 4px;
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 12px;
+				padding: 8px 12px;
+				outline: none;
+				transition: border-color 0.2s;
+			}
+			.api-desc-input:focus {
+				border-color: var(--accent3);
+			}
+			.api-desc-input::placeholder {
+				color: #444458;
+			}
+
+			.api-editors {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 12px;
+			}
+			@media (max-width: 640px) {
+				.api-editors {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.api-editor-panel {
+				background: #0a0a0c;
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+			}
+			.api-editor-panel:focus-within {
+				border-color: #3a3a48;
+			}
+
+			.api-editor-label {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 8px 14px;
+				border-bottom: 1px solid var(--border);
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				flex-shrink: 0;
+			}
+			.api-editor-label .dot {
+				width: 6px;
+				height: 6px;
+				border-radius: 50%;
+				flex-shrink: 0;
+			}
+			.req-label {
+				color: var(--accent2);
+			}
+			.req-label .dot {
+				background: var(--accent2);
+			}
+			.res-label {
+				color: var(--accent);
+			}
+			.res-label .dot {
+				background: var(--accent);
+			}
+
+			.api-code-textarea {
+				flex: 1;
+				width: 100%;
+				background: transparent;
+				border: none;
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 12px;
+				line-height: 1.7;
+				padding: 12px 14px;
+				outline: none;
+				resize: vertical;
+				min-height: 130px;
+			}
+			.api-code-textarea::placeholder {
+				color: #333345;
+			}
+
+			.chevron {
+				transition: transform 0.2s;
+				color: var(--muted);
+				font-size: 11px;
+			}
+			.open-state .chevron {
+				transform: rotate(180deg);
+			}
+
+			/* BUTTONS */
+			.action-row {
+				display: flex;
+				gap: 12px;
+				margin-top: 28px;
+				flex-wrap: wrap;
+				align-items: center;
+			}
+
+			.btn-primary {
+				font-family: var(--mono);
+				font-size: 13px;
+				padding: 12px 28px;
+				border-radius: 4px;
+				border: none;
+				background: var(--accent);
+				color: #0d0d0f;
+				cursor: pointer;
+				font-weight: 700;
+				letter-spacing: 0.06em;
+				transition: all 0.2s;
+			}
+			.btn-primary:hover {
+				background: #00ffb2;
+				transform: translateY(-1px);
+			}
+
+			.btn-secondary {
+				font-family: var(--mono);
+				font-size: 13px;
+				padding: 11px 20px;
+				border-radius: 4px;
+				border: 1px solid var(--border);
+				background: transparent;
+				color: var(--muted);
+				cursor: pointer;
+				letter-spacing: 0.05em;
+				transition: all 0.2s;
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.btn-secondary:hover {
+				border-color: var(--accent3);
+				color: var(--accent3);
+			}
+			.btn-secondary input[type='file'] {
+				display: none;
+			}
+
+			/* OUTPUT */
+			.output-panel {
+				background: var(--surface);
+				border: 1px solid var(--accent);
+				border-radius: 8px;
+				padding: 28px;
+				margin-top: 24px;
+				display: none;
+				animation: fadeUp 0.3s ease;
+			}
+			.output-panel.visible {
+				display: block;
+			}
+
+			.output-title {
+				font-size: 13px;
+				font-weight: 700;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: var(--accent);
+				font-family: var(--mono);
+				margin-bottom: 20px;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.output-title::before {
+				content: '';
+				display: inline-block;
+				width: 8px;
+				height: 8px;
+				border-radius: 50%;
+				background: var(--accent);
+				animation: pulse 1.5s infinite;
+			}
+			@keyframes pulse {
+				0%,
+				100% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 0.3;
+				}
+			}
+
+			.code-block {
+				background: #0a0a0c;
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				overflow: hidden;
+			}
+			.code-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 10px 16px;
+				border-bottom: 1px solid var(--border);
+			}
+			.code-label {
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				color: var(--muted);
+			}
+			.copy-btn {
+				font-family: var(--mono);
+				font-size: 10px;
+				padding: 3px 10px;
+				border-radius: 3px;
+				border: 1px solid var(--border);
+				background: transparent;
+				color: var(--muted);
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+			.copy-btn:hover {
+				border-color: var(--accent);
+				color: var(--accent);
+			}
+			pre {
+				padding: 16px;
+				font-family: var(--mono);
+				font-size: 12px;
+				line-height: 1.7;
+				overflow-x: auto;
+				white-space: pre-wrap;
+			}
+
+			.api-method {
+				display: inline-flex;
+				align-items: center;
+				gap: 10px;
+				margin-bottom: 14px;
+			}
+			.api-path {
+				font-family: var(--mono);
+				font-size: 13px;
+				color: var(--text);
+			}
+
+			.two-col {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 20px;
+			}
+			@media (max-width: 640px) {
+				.two-col {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.divider {
+				height: 1px;
+				background: var(--border);
+				margin: 24px 0;
+			}
+
+			/* GROUP BANNER */
+			.group-banner {
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				background: rgba(124, 111, 255, 0.06);
+				border: 1px solid rgba(124, 111, 255, 0.2);
+				border-radius: 6px;
+				padding: 14px 20px;
+				margin-bottom: 32px;
+				flex-wrap: wrap;
+			}
+			.group-banner .glabel {
+				font-family: var(--mono);
+				font-size: 11px;
+				color: var(--accent3);
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+			}
+			.group-banner input {
+				background: transparent;
+				border: none;
+				border-bottom: 1px solid rgba(124, 111, 255, 0.3);
+				border-radius: 0;
+				color: var(--text);
+				font-size: 14px;
+				font-weight: 600;
+				padding: 4px 0;
+				width: 180px;
+			}
+			.group-banner input:focus {
+				border-bottom-color: var(--accent3);
+				outline: none;
+			}
+
+			/* ── Q2 MECHANIC FLOW ── */
+			.mechanic-header {
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				padding: 20px 24px;
+				margin-bottom: 24px;
+			}
+
+			.mechanic-title-input {
+				font-size: 20px;
+				font-weight: 800;
+				background: transparent;
+				border: none;
+				border-bottom: 1px dashed var(--border);
+				color: var(--text);
+				font-family: var(--sans);
+				padding: 4px 0 8px;
+				width: 100%;
+				outline: none;
+				margin-bottom: 12px;
+				display: block;
+			}
+			.mechanic-title-input:focus {
+				border-bottom-color: var(--accent);
+			}
+			.mechanic-title-input::placeholder {
+				color: #333345;
+				font-weight: 400;
+			}
+
+			.mechanic-desc-input {
+				width: 100%;
+				background: transparent;
+				border: none;
+				border-bottom: 1px dashed var(--border);
+				color: var(--muted);
+				font-family: var(--mono);
+				font-size: 12px;
+				padding: 4px 0 8px;
+				outline: none;
+				resize: none;
+			}
+			.mechanic-desc-input:focus {
+				border-bottom-color: var(--accent3);
+			}
+			.mechanic-desc-input::placeholder {
+				color: #333345;
+			}
+
+			/* FLOW STEP CARDS */
+			.flow-step-card {
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				overflow: hidden;
+				margin-bottom: 0;
+				border-left: 3px solid var(--accent3);
+			}
+
+			.flow-step-header {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				padding: 14px 18px 14px 20px;
+				border-bottom: 1px solid var(--border);
+			}
+
+			.step-num {
+				font-family: var(--mono);
+				font-size: 10px;
+				color: var(--muted);
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				padding: 3px 8px;
+				border-radius: 3px;
+				white-space: nowrap;
+				flex-shrink: 0;
+			}
+
+			.step-action-input {
+				flex: 1;
+				min-width: 0;
+				background: transparent;
+				border: none;
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 13px;
+				outline: none;
+				padding: 0;
+			}
+			.step-action-input::placeholder {
+				color: #444458;
+			}
+
+			.flow-step-body {
+				padding: 16px 20px 20px;
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+			}
+
+			.step-desc-area {
+				width: 100%;
+				background: transparent;
+				border: none;
+				border-bottom: 1px dashed var(--border);
+				color: var(--muted);
+				font-family: var(--mono);
+				font-size: 12px;
+				padding: 4px 0 8px;
+				outline: none;
+				resize: none;
+			}
+			.step-desc-area:focus {
+				border-bottom-color: var(--accent3);
+			}
+			.step-desc-area::placeholder {
+				color: #444458;
+			}
+
+			.step-editors {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 12px;
+			}
+			@media (max-width: 640px) {
+				.step-editors {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.step-editor-panel {
+				background: #0a0a0c;
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+			}
+			.step-editor-panel:focus-within {
+				border-color: #3a3a48;
+			}
+
+			.step-editor-label {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 8px 14px;
+				border-bottom: 1px solid var(--border);
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				flex-shrink: 0;
+			}
+
+			.step-code-area {
+				flex: 1;
+				width: 100%;
+				background: transparent;
+				border: none;
+				color: var(--text);
+				font-family: var(--mono);
+				font-size: 12px;
+				line-height: 1.7;
+				padding: 12px 14px;
+				outline: none;
+				resize: vertical;
+				min-height: 110px;
+			}
+			.step-code-area::placeholder {
+				color: #333345;
+			}
+
+			/* STEP WRAPPER with connector */
+			.flow-step-wrap {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.flow-connector {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 10px 0;
+				gap: 10px;
+				font-family: var(--mono);
+				font-size: 10px;
+				color: #444458;
+				letter-spacing: 0.1em;
+			}
+			.flow-connector::before,
+			.flow-connector::after {
+				content: '';
+				flex: 1;
+				height: 1px;
+				background: var(--border);
+				max-width: 60px;
+			}
+
+			/* PREVIEW */
+			.preview-step {
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				overflow: hidden;
+				border-left: 3px solid var(--accent3);
+			}
+			.preview-step-header {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				padding: 12px 18px;
+				border-bottom: 1px solid var(--border);
+			}
+			.preview-step-body {
+				padding: 16px 18px;
+			}
+			.flow-preview-connector {
+				text-align: center;
+				font-family: var(--mono);
+				font-size: 11px;
+				color: #333345;
+				margin: 10px 0;
+				letter-spacing: 0.1em;
+			}
+
+			/* JSON VALIDATION */
+			.json-status {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				padding: 4px 14px 6px;
+				font-family: var(--mono);
+				font-size: 10px;
+				letter-spacing: 0.04em;
+				min-height: 22px;
+				border-top: 1px solid var(--border);
+			}
+			.json-status.valid {
+				color: var(--accent);
+			}
+			.json-status.invalid {
+				color: #ff5050;
+			}
+			.json-status.empty {
+				color: var(--muted);
+				opacity: 0.5;
+			}
+			.json-status .json-dot {
+				width: 5px;
+				height: 5px;
+				border-radius: 50%;
+				flex-shrink: 0;
+			}
+			.json-status.valid .json-dot {
+				background: var(--accent);
+			}
+			.json-status.invalid .json-dot {
+				background: #ff5050;
+			}
+			.json-status.empty .json-dot {
+				background: var(--muted);
+			}
+
+			.json-error-textarea {
+				border-color: rgba(255, 80, 80, 0.5) !important;
+			}
+
+			/* NOTIF */
+			.notif {
+				position: fixed;
+				bottom: 24px;
+				right: 24px;
+				background: var(--surface);
+				border: 1px solid var(--accent);
+				border-radius: 6px;
+				padding: 14px 20px;
+				font-family: var(--mono);
+				font-size: 12px;
+				color: var(--accent);
+				z-index: 999;
+				transform: translateY(80px);
+				opacity: 0;
+				transition: all 0.3s ease;
+			}
+			.notif.show {
+				transform: translateY(0);
+				opacity: 1;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<div class="tag">🎮 Game Design Workshop</div>
+				<h1>Design Your <span>Game</span><br />APIs &amp; Flow</h1>
+				<p class="subtitle">
+					// Group activity — Q1: entities &amp; APIs &nbsp;|&nbsp; Q2: mechanic
+					flow walkthrough
+				</p>
+			</header>
+			<div class="group-banner">
+				<span class="glabel">Group</span>
+				<input
+					id="groupName"
+					type="text"
+					placeholder="Group name…"
+				/>
+				<span
+					class="glabel"
+					style="margin-left: 16px"
+					>Members</span
+				>
+				<input
+					id="memberNames"
+					type="text"
+					placeholder="Name1, Name2, Name3…"
+					style="width: 260px"
+				/>
+			</div>
+			<div class="q-nav">
+				<button
+					class="q-btn active"
+					onclick="switchPanel('q1', this)"
+				>
+					Q1 — Entity &amp; API Design
+				</button>
+				<button
+					class="q-btn"
+					onclick="switchPanel('q2', this)"
+				>
+					Q2 — Game Mechanic Flow
+				</button>
+			</div>
+			<!-- ══════════════════ Q1 ══════════════════ -->
+			<div
+				class="panel active"
+				id="panel-q1"
+			>
+				<div class="card">
+					<div class="card-header">
+						<div class="card-icon icon-green">🎯</div>
+						<div>
+							<div class="card-title">Game Concept</div>
+							<div class="card-sub">Start by defining your game idea</div>
+						</div>
+					</div>
+					<div class="field-group">
+						<div class="field-row">
+							<div class="field-label">Game Name</div>
+							<input
+								id="gameName"
+								type="text"
+								placeholder="e.g. Dragon Quest Arena…"
+							/>
+						</div>
+						<div class="field-row">
+							<div class="field-label">Genre</div>
+							<select id="gameGenre">
+								<option value="">Select genre…</option>
+								<option>RPG</option>
+								<option>Battle Royale</option>
+								<option>Strategy</option>
+								<option>Puzzle</option>
+								<option>Racing</option>
+								<option>Sports</option>
+								<option>Simulation</option>
+								<option>Platformer</option>
+								<option>Tower Defense</option>
+								<option>Card Game</option>
+								<option>Farming</option>
+								<option>Pet Care</option>
+								<option>Other</option>
+							</select>
+						</div>
+						<div class="field-row">
+							<div class="field-label">Description</div>
+							<textarea
+								id="gameDesc"
+								rows="3"
+								placeholder="Briefly describe the game mechanics and goal…"
+							></textarea>
+						</div>
+					</div>
+				</div>
+				<div class="card">
+					<div class="card-header">
+						<div class="card-icon icon-purple">🗄️</div>
+						<div>
+							<div class="card-title">Entity Design</div>
+							<div class="card-sub">
+								Define the data models your game needs — each entity is like a
+								database table (e.g. Player, Monster, Item)
+							</div>
+						</div>
+					</div>
+					<div id="entities-container"></div>
+					<button
+						class="add-btn"
+						onclick="addEntity()"
+					>
+						+ Add Entity
+					</button>
+				</div>
+				<div class="card">
+					<div class="card-header">
+						<div class="card-icon icon-orange">⚡</div>
+						<div>
+							<div class="card-title">API Endpoints</div>
+							<div class="card-sub">
+								Design your REST APIs — write your own mock request &amp;
+								response for each
+							</div>
+						</div>
+					</div>
+					<div id="apis-container"></div>
+					<button
+						class="add-btn"
+						onclick="addAPI()"
+					>
+						+ Add API Endpoint
+					</button>
+				</div>
+				<div class="action-row">
+					<button
+						class="btn-primary"
+						onclick="generatePreview()"
+					>
+						Preview for Sharing →
+					</button>
+					<button
+						class="btn-secondary"
+						onclick="saveQ1()"
+					>
+						💾 Save as JSON
+					</button>
+					<label class="btn-secondary">
+						📂 Load from File
+						<input
+							type="file"
+							accept=".json"
+							onchange="loadFromFile(event)"
+						/>
+					</label>
+				</div>
+				<div
+					class="output-panel"
+					id="output-q1"
+				>
+					<div class="output-title">Output Ready — Share with Class</div>
+					<div id="output-content-q1"></div>
+				</div>
+			</div>
+			<!-- ══════════════════ Q2 ══════════════════ -->
+			<div
+				class="panel"
+				id="panel-q2"
+			>
+				<div style="margin-bottom: 28px">
+					<div
+						style="
+							font-size: 22px;
+							font-weight: 800;
+							letter-spacing: -0.01em;
+							margin-bottom: 10px;
+						"
+					>
+						Game Mechanic Flow
+					</div>
+					<div
+						style="
+							font-family: var(--mono);
+							font-size: 13px;
+							color: var(--muted);
+							line-height: 1.8;
+							background: var(--surface2);
+							border: 1px solid var(--border);
+							border-radius: 6px;
+							padding: 16px 20px;
+						"
+					>
+						Pick
+						<strong style="color: var(--text)">one game mechanic</strong> (e.g.
+						"Player attacks a monster", "Player joins a lobby", "Player buys an
+						item").<br />Then walk through the sequence of API calls step by
+						step — for each call, show the
+						<span style="color: var(--accent2)">request</span> and
+						<span style="color: var(--accent)">response</span>.
+					</div>
+				</div>
+				<div class="mechanic-header">
+					<div
+						style="
+							font-family: var(--mono);
+							font-size: 10px;
+							color: var(--accent3);
+							text-transform: uppercase;
+							letter-spacing: 0.1em;
+							margin-bottom: 8px;
+						"
+					>
+						Mechanic Name
+					</div>
+					<input
+						class="mechanic-title-input"
+						id="mechanicName"
+						placeholder="e.g. Player Attacks a Monster…"
+						type="text"
+					/>
+					<textarea
+						class="mechanic-desc-input"
+						id="mechanicDesc"
+						rows="2"
+						placeholder="Describe this mechanic. What triggers it? Who is involved? What is the end result?"
+					></textarea>
+				</div>
+				<div id="flow-steps-q2"></div>
+				<button
+					class="add-btn"
+					style="width: 100%; margin-bottom: 28px; padding: 12px"
+					onclick="addFlowStep()"
+				>
+					+ Add API Call Step
+				</button>
+				<div class="action-row">
+					<button
+						class="btn-primary"
+						onclick="generateFlowPreview()"
+					>
+						Preview Flow →
+					</button>
+				</div>
+				<div
+					class="output-panel"
+					id="output-q2"
+				>
+					<div class="output-title">Mechanic Flow — Ready to Present</div>
+					<div id="output-content-q2"></div>
+				</div>
+			</div>
+		</div>
+		<div
+			class="notif"
+			id="notif"
+		></div>
+		<script>
+			// ─── UTILS ───────────────────────────────────────────────────────────────────
+			function switchPanel(id, btn) {
+				document
+					.querySelectorAll('.panel')
+					.forEach((p) => p.classList.remove('active'));
+				document
+					.querySelectorAll('.q-btn')
+					.forEach((b) => b.classList.remove('active'));
+				document.getElementById('panel-' + id).classList.add('active');
+				btn.classList.add('active');
+			}
+
+			function notify(msg) {
+				const n = document.getElementById('notif');
+				n.textContent = msg;
+				n.classList.add('show');
+				setTimeout(() => n.classList.remove('show'), 2600);
+			}
+
+			function copyText(text) {
+				navigator.clipboard.writeText(text).then(() => notify('✓ Copied!'));
+			}
+
+			function esc(s) {
+				return (s || '')
+					.replace(/&/g, '&amp;')
+					.replace(/"/g, '&quot;')
+					.replace(/</g, '&lt;')
+					.replace(/>/g, '&gt;');
+			}
+
+			// ─── ENTITIES ────────────────────────────────────────────────────────────────
+			let entityCount = 0;
+
+			function addEntity(name = '', fields = []) {
+				entityCount++;
+				const eid = entityCount;
+				const id = 'entity-' + eid;
+				const container = document.getElementById('entities-container');
+				const div = document.createElement('div');
+				div.id = id;
+				div.style.marginBottom = '16px';
+				div.innerHTML = `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;">Entity</span>
+        <input type="text" value="${esc(name)}" placeholder="EntityName (e.g. Player, Monster, Item…)" style="flex:1;font-size:14px;font-weight:700;font-family:var(--sans)" />
+        <button class="del-btn" onclick="document.getElementById('${id}').remove()">×</button>
+      </div>
+      <div style="padding:14px 16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;">Fields</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.02em;">— define the properties this entity has</span>
+        </div>
+        <div class="field-col-headers">
+          <span>Field Name</span>
+          <span>Data Type</span>
+          <span>Description</span>
+          <span></span>
+        </div>
+        <div class="efield-rows-${eid}">
+          ${fields.map((f) => fieldRowHTML(eid, f.name, f.type, f.desc)).join('')}
+        </div>
+        <button class="add-btn" onclick="addField(${eid})">+ Add Field</button>
+      </div>
+    </div>`;
+				container.appendChild(div);
+			}
+
+			function fieldRowHTML(eid, name = '', type = 'string', desc = '') {
+				const types = ['string', 'int', 'boolean', 'array', 'uuid', 'date'];
+				return `<div class="field-editor-row">
+    <input type="text" value="${esc(name)}" placeholder="e.g. username" />
+    <select>${types.map((t) => `<option${t === type ? ' selected' : ''}>${t}</option>`).join('')}</select>
+    <input type="text" value="${esc(desc)}" placeholder="e.g. The player's display name" />
+    <button class="del-btn" onclick="this.closest('.field-editor-row').remove()">×</button>
+  </div>`;
+			}
+
+			function addField(eid) {
+				const c = document.querySelector('.efield-rows-' + eid);
+				const wrap = document.createElement('div');
+				wrap.innerHTML = fieldRowHTML(eid);
+				c.appendChild(wrap.firstElementChild);
+			}
+
+			// ─── API ENDPOINTS ────────────────────────────────────────────────────────────
+			let apiCount = 0;
+
+			function addAPI(
+				method = 'GET',
+				path = '',
+				desc = '',
+				reqEx = '',
+				resEx = '',
+			) {
+				apiCount++;
+				const id = 'api-' + apiCount;
+				const container = document.getElementById('apis-container');
+				const div = document.createElement('div');
+				div.id = id;
+				div.style.marginBottom = '12px';
+				div.innerHTML = `
+    <div class="api-card">
+      <div class="api-card-header" onclick="toggleApiCard('${id}')">
+        <select class="method-badge GET" id="${id}-method" onclick="event.stopPropagation()">
+          ${['GET', 'POST', 'PUT', 'DELETE']
+						.map(
+							(m) =>
+								`<option value="${m}"${m === method ? ' selected' : ''}>${m}</option>`,
+						)
+						.join('')}
+        </select>
+        <input type="text" class="api-path-input" value="${esc(path)}" placeholder="/api/game/…" onclick="event.stopPropagation()" />
+        <button class="del-btn" style="width:28px;height:28px;font-size:14px;" onclick="document.getElementById('${id}').remove();event.stopPropagation()">×</button>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="api-card-body" id="${id}-body">
+        <div class="api-body-inner">
+          <input type="text" class="api-desc-input" value="${esc(desc)}" placeholder="Describe what this endpoint does…" />
+          <div class="api-editors">
+            <div class="api-editor-panel">
+              <div class="api-editor-label req-label"><span class="dot"></span>Mock Request (JSON)</div>
+              <textarea class="api-code-textarea" placeholder="Write your mock request body here…">${esc(reqEx)}</textarea>
+            </div>
+            <div class="api-editor-panel">
+              <div class="api-editor-label res-label"><span class="dot"></span>Mock Response (JSON)</div>
+              <textarea class="api-code-textarea" placeholder="Write your mock response body here…">${esc(resEx)}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+				container.appendChild(div);
+				const sel = document.getElementById(id + '-method');
+				sel.value = method;
+				styleMethod(sel);
+				sel.addEventListener('change', function () {
+					styleMethod(this);
+				});
+			}
+
+			function styleMethod(sel) {
+				sel.className = 'method-badge ' + sel.value;
+			}
+
+			function toggleApiCard(id) {
+				const body = document.getElementById(id + '-body');
+				const header = body.previousElementSibling;
+				body.classList.toggle('open');
+				header.classList.toggle('open-state');
+			}
+
+			// ─── COLLECT Q1 DATA ─────────────────────────────────────────────────────────
+			function collectQ1() {
+				const data = {
+					group: document.getElementById('groupName').value,
+					members: document.getElementById('memberNames').value,
+					gameName: document.getElementById('gameName').value,
+					gameGenre: document.getElementById('gameGenre').value,
+					gameDesc: document.getElementById('gameDesc').value,
+					entities: [],
+					apis: [],
+				};
+
+				document.querySelectorAll('#entities-container > div').forEach((el) => {
+					const name = el.querySelector('input[type=text]').value;
+					const fields = [];
+					el.querySelectorAll('.field-editor-row').forEach((r) => {
+						const inputs = r.querySelectorAll('input');
+						const sel = r.querySelector('select');
+						fields.push({
+							name: inputs[0].value,
+							type: sel ? sel.value : 'string',
+							desc: inputs[1].value,
+						});
+					});
+					data.entities.push({ name, fields });
+				});
+
+				document.querySelectorAll('#apis-container > div').forEach((el) => {
+					const methodSel = el.querySelector('select.method-badge');
+					const pathIn = el.querySelector('.api-path-input');
+					const descIn = el.querySelector('.api-desc-input');
+					const tas = el.querySelectorAll('textarea');
+					if (!methodSel) return;
+					data.apis.push({
+						method: methodSel.value,
+						path: pathIn ? pathIn.value : '',
+						desc: descIn ? descIn.value : '',
+						request: tas[0] ? tas[0].value : '',
+						response: tas[1] ? tas[1].value : '',
+					});
+				});
+
+				return data;
+			}
+
+			// ─── SAVE ────────────────────────────────────────────────────────────────────
+			function saveQ1() {
+				const data = collectQ1();
+				const blob = new Blob([JSON.stringify(data, null, 2)], {
+					type: 'application/json',
+				});
+				const a = document.createElement('a');
+				const url = URL.createObjectURL(blob);
+				a.href = url;
+				const gname = (data.group || 'group')
+					.replace(/[^a-z0-9]/gi, '_')
+					.toLowerCase();
+				a.download = 'q1_' + gname + '.json';
+				a.click();
+				URL.revokeObjectURL(url);
+				notify('💾 Saved as ' + a.download);
+			}
+
+			// ─── LOAD FROM FILE ──────────────────────────────────────────────────────────
+			function loadFromFile(event) {
+				const file = event.target.files[0];
+				if (!file) return;
+				const reader = new FileReader();
+				reader.onload = function (e) {
+					try {
+						const data = JSON.parse(e.target.result);
+						applyQ1Data(data);
+						validateAllJSON();
+						notify('✓ Loaded ' + file.name);
+					} catch (err) {
+						notify('✗ Invalid JSON file');
+					}
+				};
+				reader.readAsText(file);
+				event.target.value = '';
+			}
+
+			function applyQ1Data(data) {
+				document.getElementById('groupName').value = data.group || '';
+				document.getElementById('memberNames').value = data.members || '';
+				document.getElementById('gameName').value = data.gameName || '';
+				document.getElementById('gameGenre').value = data.gameGenre || '';
+				document.getElementById('gameDesc').value = data.gameDesc || '';
+
+				document.getElementById('entities-container').innerHTML = '';
+				entityCount = 0;
+				(data.entities || []).forEach((e) => addEntity(e.name, e.fields || []));
+
+				document.getElementById('apis-container').innerHTML = '';
+				apiCount = 0;
+				(data.apis || []).forEach((a) => {
+					addAPI(
+						a.method || 'GET',
+						a.path || '',
+						a.desc || '',
+						a.request || '',
+						a.response || '',
+					);
+					// auto-open if has content
+					if (a.request || a.response || a.desc) {
+						const body = document.getElementById('api-' + apiCount + '-body');
+						if (body) {
+							body.classList.add('open');
+							body.previousElementSibling.classList.add('open-state');
+						}
+					}
+				});
+			}
+
+			// ─── PREVIEW Q1 ──────────────────────────────────────────────────────────────
+			function generatePreview() {
+				const data = collectQ1();
+
+				let entityHTML = '';
+				data.entities.forEach((e) => {
+					entityHTML += `<div style="margin-bottom:20px">
+      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent3);margin-bottom:8px">${esc(e.name) || '—'}</div>
+      <table class="entity-table">
+        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>${(e.fields || [])
+					.map(
+						(f) => `<tr>
+          <td style="color:var(--text)">${esc(f.name) || '—'}</td>
+          <td><span class="type-badge type-${f.type}">${f.type}</span></td>
+          <td style="color:var(--muted)">${esc(f.desc) || '—'}</td>
+        </tr>`,
+					)
+					.join('')}</tbody>
+      </table></div>`;
+				});
+
+				let apiHTML = '';
+				data.apis.forEach((a) => {
+					apiHTML += `<div style="margin-bottom:24px">
+      <div class="api-method">
+        <span class="method-badge ${a.method}" style="pointer-events:none">${a.method}</span>
+        <span class="api-path">${esc(a.path) || '/api/…'}</span>
+      </div>
+      ${a.desc ? `<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px">${esc(a.desc)}</div>` : ''}
+      <div class="two-col">
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-label req-label">Request</span>
+            <button class="copy-btn" onclick="copyText(this.closest('.code-block').querySelector('pre').textContent)">Copy</button>
+          </div>
+          <pre>${esc(a.request) || '—'}</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-label res-label">Response</span>
+            <button class="copy-btn" onclick="copyText(this.closest('.code-block').querySelector('pre').textContent)">Copy</button>
+          </div>
+          <pre>${esc(a.response) || '—'}</pre>
+        </div>
+      </div></div>`;
+				});
+
+				document.getElementById('output-content-q1').innerHTML = `
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">GROUP / MEMBERS</div>
+      <div style="font-weight:700;font-size:18px">${esc(data.group) || '—'}</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted)">${esc(data.members) || '—'}</div>
+    </div>
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">GAME</div>
+      <div style="font-size:20px;font-weight:800">${esc(data.gameName) || '—'} <span style="font-size:12px;color:var(--muted);font-weight:400;font-family:var(--mono)">[${esc(data.gameGenre) || '—'}]</span></div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">${esc(data.gameDesc)}</div>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px">▸ Entity Design</div>
+    ${entityHTML || '<div style="color:var(--muted);font-family:var(--mono);font-size:12px">No entities defined.</div>'}
+    <div class="divider"></div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px">▸ API Endpoints</div>
+    ${apiHTML || '<div style="color:var(--muted);font-family:var(--mono);font-size:12px">No APIs defined.</div>'}`;
+
+				document.getElementById('output-q1').classList.add('visible');
+				document
+					.getElementById('output-q1')
+					.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				notify('✓ Preview ready!');
+			}
+
+			// ─── Q2: FLOW STEPS ──────────────────────────────────────────────────────────
+			let flowCount = 0;
+
+			function addFlowStep() {
+				flowCount++;
+				const n = flowCount;
+				const id = 'fstep-' + n;
+				const container = document.getElementById('flow-steps-q2');
+
+				const wrap = document.createElement('div');
+				wrap.className = 'flow-step-wrap';
+				wrap.id = 'fwrap-' + n;
+
+				if (n > 1) {
+					wrap.innerHTML = `<div class="flow-connector">▼ &nbsp; NEXT API CALL</div>`;
+				}
+
+				const card = document.createElement('div');
+				card.id = id;
+				card.innerHTML = `
+    <div class="flow-step-card">
+      <div class="flow-step-header">
+        <span class="step-num">Step ${n}</span>
+        <select class="method-badge GET" style="flex-shrink:0" onchange="styleMethod(this)">
+          ${['GET', 'POST', 'PUT', 'DELETE'].map((m) => `<option value="${m}">${m}</option>`).join('')}
+        </select>
+        <input class="step-action-input" type="text" placeholder="/api/endpoint…" />
+        <button class="del-btn" style="width:28px;height:28px;font-size:14px;margin-left:auto" onclick="document.getElementById('fwrap-${n}').remove()">×</button>
+      </div>
+      <div class="flow-step-body">
+        <textarea class="step-desc-area" rows="2" placeholder="What happens in this step? Who sends this request and why?"></textarea>
+        <div class="step-editors">
+          <div class="step-editor-panel">
+            <div class="step-editor-label req-label"><span class="dot"></span>Request (JSON)</div>
+            <textarea class="step-code-area" placeholder="Write the request body…"></textarea>
+          </div>
+          <div class="step-editor-panel">
+            <div class="step-editor-label res-label"><span class="dot"></span>Response (JSON)</div>
+            <textarea class="step-code-area" placeholder="Write the response body…"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+				wrap.appendChild(card);
+				container.appendChild(wrap);
+
+				// style initial method select
+				styleMethod(card.querySelector('select'));
+			}
+
+			// ─── GENERATE Q2 PREVIEW ─────────────────────────────────────────────────────
+			function generateFlowPreview() {
+				const mechName =
+					document.getElementById('mechanicName').value || 'Game Mechanic';
+				const mechDesc = document.getElementById('mechanicDesc').value;
+				const group = document.getElementById('groupName').value || 'Group';
+
+				const stepCards = document.querySelectorAll(
+					'#flow-steps-q2 .flow-step-card',
+				);
+				if (!stepCards.length) {
+					notify('✗ Add at least one step first');
+					return;
+				}
+
+				let stepsHTML = '';
+				stepCards.forEach((el, i) => {
+					const method = el.querySelector('select').value;
+					const path = el.querySelector('.step-action-input').value || '/api/…';
+					const desc = el.querySelector('.step-desc-area').value;
+					const tas = el.querySelectorAll('.step-code-area');
+					const req = tas[0] ? tas[0].value : '';
+					const res = tas[1] ? tas[1].value : '';
+
+					if (i > 0) {
+						stepsHTML += `<div class="flow-preview-connector">▼ &nbsp; NEXT API CALL &nbsp; ▼</div>`;
+					}
+
+					stepsHTML += `
+      <div class="preview-step">
+        <div class="preview-step-header">
+          <span class="step-num">Step ${i + 1}</span>
+          <span class="method-badge ${method}" style="pointer-events:none">${method}</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(path)}</span>
+        </div>
+        <div class="preview-step-body">
+          ${desc ? `<div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">${esc(desc)}</div>` : ''}
+          <div class="two-col">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-label req-label">Request</span>
+                <button class="copy-btn" onclick="copyText(this.closest('.code-block').querySelector('pre').textContent)">Copy</button>
+              </div>
+              <pre>${esc(req) || '—'}</pre>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-label res-label">Response</span>
+                <button class="copy-btn" onclick="copyText(this.closest('.code-block').querySelector('pre').textContent)">Copy</button>
+              </div>
+              <pre>${esc(res) || '—'}</pre>
+            </div>
+          </div>
+        </div>
+      </div>`;
+				});
+
+				document.getElementById('output-content-q2').innerHTML = `
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">GROUP</div>
+      <div style="font-weight:700;font-size:16px">${esc(group)}</div>
+    </div>
+    <div style="margin-bottom:24px">
+      <div style="font-size:22px;font-weight:800;margin-bottom:8px">${esc(mechName)}</div>
+      ${mechDesc ? `<div style="font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.7">${esc(mechDesc)}</div>` : ''}
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--accent3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px">
+      ▸ API Call Sequence — ${stepCards.length} Step${stepCards.length > 1 ? 's' : ''}
+    </div>
+    ${stepsHTML}`;
+
+				document.getElementById('output-q2').classList.add('visible');
+				document
+					.getElementById('output-q2')
+					.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				notify('✓ Flow preview ready!');
+			}
+
+			// ─── JSON VALIDATION ─────────────────────────────────────────────────────
+			function validateJSON(textarea) {
+				const panel = textarea.closest('.api-editor-panel, .step-editor-panel');
+				if (!panel) return;
+				let status = panel.querySelector('.json-status');
+				if (!status) {
+					status = document.createElement('div');
+					status.className = 'json-status empty';
+					status.innerHTML =
+						'<span class="json-dot"></span><span class="json-msg">Empty</span>';
+					panel.appendChild(status);
+				}
+				const msg = status.querySelector('.json-msg');
+				const val = textarea.value.trim();
+				if (!val) {
+					status.className = 'json-status empty';
+					msg.textContent = 'Empty';
+					textarea.classList.remove('json-error-textarea');
+					return;
+				}
+				try {
+					JSON.parse(val);
+					status.className = 'json-status valid';
+					msg.textContent = 'Valid JSON';
+					textarea.classList.remove('json-error-textarea');
+				} catch (e) {
+					status.className = 'json-status invalid';
+					const errMsg = e.message.replace(/^JSON\.parse:\s*/, '');
+					msg.textContent =
+						errMsg.length > 60 ? errMsg.slice(0, 57) + '…' : errMsg;
+					textarea.classList.add('json-error-textarea');
+				}
+			}
+
+			// Attach validation to all current and future JSON textareas via delegation
+			document.addEventListener('input', function (e) {
+				if (
+					e.target.matches('.api-code-textarea') ||
+					e.target.matches('.step-code-area')
+				) {
+					validateJSON(e.target);
+				}
+			});
+
+			// Also validate on blur for a final check
+			document.addEventListener(
+				'blur',
+				function (e) {
+					if (
+						e.target.matches('.api-code-textarea') ||
+						e.target.matches('.step-code-area')
+					) {
+						validateJSON(e.target);
+					}
+				},
+				true,
+			);
+
+			// Validate all existing JSON textareas (e.g. after load)
+			function validateAllJSON() {
+				document
+					.querySelectorAll('.api-code-textarea, .step-code-area')
+					.forEach(validateJSON);
+			}
+
+			// ─── INIT ────────────────────────────────────────────────────────────────────
+			(function init() {
+				addEntity('Player', [
+					{ name: 'id', type: 'uuid', desc: 'Primary key' },
+					{ name: 'username', type: 'string', desc: 'Display name' },
+				]);
+				addAPI('POST', '/api/players/register', 'Register a new player');
+				addFlowStep();
+				validateAllJSON();
+			})();
+		</script>
+	</body>
+</html>
