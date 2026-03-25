@@ -415,11 +415,6 @@
 				color: #ff5050;
 				border: 1px solid rgba(255, 80, 80, 0.3);
 			}
-			.PATCH {
-				background: rgba(255, 200, 60, 0.15);
-				color: #ffc83c;
-				border: 1px solid rgba(255, 200, 60, 0.3);
-			}
 
 			/* API CARD */
 			.api-card {
@@ -1231,7 +1226,22 @@
 					class="output-panel"
 					id="output-q1"
 				>
-					<div class="output-title">Output Ready — Share with Class</div>
+					<div class="output-title">
+						Output Ready — Share with Class<button
+							class="del-btn"
+							style="
+								margin-left: auto;
+								width: 28px;
+								height: 28px;
+								font-size: 14px;
+							"
+							onclick="
+								this.closest('.output-panel').classList.remove('visible')
+							"
+						>
+							×
+						</button>
+					</div>
 					<div id="output-content-q1"></div>
 				</div>
 			</div>
@@ -1313,12 +1323,41 @@
 					>
 						Preview Flow →
 					</button>
+					<button
+						class="btn-secondary"
+						onclick="saveQ2()"
+					>
+						💾 Save as JSON
+					</button>
+					<label class="btn-secondary">
+						📂 Load from File
+						<input
+							type="file"
+							accept=".json"
+							onchange="loadQ2FromFile(event)"
+						/>
+					</label>
 				</div>
 				<div
 					class="output-panel"
 					id="output-q2"
 				>
-					<div class="output-title">Mechanic Flow — Ready to Present</div>
+					<div class="output-title">
+						Mechanic Flow — Ready to Present<button
+							class="del-btn"
+							style="
+								margin-left: auto;
+								width: 28px;
+								height: 28px;
+								font-size: 14px;
+							"
+							onclick="
+								this.closest('.output-panel').classList.remove('visible')
+							"
+						>
+							×
+						</button>
+					</div>
 					<div id="output-content-q2"></div>
 				</div>
 			</div>
@@ -1348,7 +1387,30 @@
 			}
 
 			function copyText(text) {
-				navigator.clipboard.writeText(text).then(() => notify('✓ Copied!'));
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard
+						.writeText(text)
+						.then(() => notify('✓ Copied!'))
+						.catch(() => fallbackCopy(text));
+				} else {
+					fallbackCopy(text);
+				}
+			}
+
+			function fallbackCopy(text) {
+				const ta = document.createElement('textarea');
+				ta.value = text;
+				ta.style.position = 'fixed';
+				ta.style.opacity = '0';
+				document.body.appendChild(ta);
+				ta.select();
+				try {
+					document.execCommand('copy');
+					notify('✓ Copied!');
+				} catch (e) {
+					notify('✗ Copy failed — try manually');
+				}
+				document.body.removeChild(ta);
 			}
 
 			function esc(s) {
@@ -1374,7 +1436,7 @@
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);">
         <span style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;">Entity</span>
-        <input type="text" value="${esc(name)}" placeholder="EntityName (e.g. Player, Monster, Item…)" style="flex:1;font-size:14px;font-weight:700;font-family:var(--sans)" />
+        <input type="text" class="entity-name-input" value="${esc(name)}" placeholder="EntityName (e.g. Player, Monster, Item…)" style="flex:1;font-size:14px;font-weight:700;font-family:var(--sans)" />
         <button class="del-btn" onclick="document.getElementById('${id}').remove()">×</button>
       </div>
       <div style="padding:14px 16px;">
@@ -1494,7 +1556,7 @@
 				};
 
 				document.querySelectorAll('#entities-container > div').forEach((el) => {
-					const name = el.querySelector('input[type=text]').value;
+					const name = el.querySelector('.entity-name-input').value;
 					const fields = [];
 					el.querySelectorAll('.field-editor-row').forEach((r) => {
 						const inputs = r.querySelectorAll('input');
@@ -1526,9 +1588,39 @@
 				return data;
 			}
 
+			// ─── COLLECT Q2 DATA ─────────────────────────────────────────────────────────
+			function collectQ2() {
+				const steps = [];
+				document
+					.querySelectorAll('#flow-steps-q2 .flow-step-card')
+					.forEach((el) => {
+						const method = el.querySelector('select').value;
+						const path = el.querySelector('.step-action-input').value;
+						const desc = el.querySelector('.step-desc-area').value;
+						const tas = el.querySelectorAll('.step-code-area');
+						steps.push({
+							method,
+							path,
+							desc,
+							request: tas[0] ? tas[0].value : '',
+							response: tas[1] ? tas[1].value : '',
+						});
+					});
+				return {
+					mechanicName: document.getElementById('mechanicName').value,
+					mechanicDesc: document.getElementById('mechanicDesc').value,
+					steps,
+				};
+			}
+
 			// ─── SAVE ────────────────────────────────────────────────────────────────────
-			function saveQ1() {
+			function saveAll() {
 				const data = collectQ1();
+				data.q2 = collectQ2();
+				return data;
+			}
+
+			function downloadJSON(data, prefix) {
 				const blob = new Blob([JSON.stringify(data, null, 2)], {
 					type: 'application/json',
 				});
@@ -1538,10 +1630,18 @@
 				const gname = (data.group || 'group')
 					.replace(/[^a-z0-9]/gi, '_')
 					.toLowerCase();
-				a.download = 'q1_' + gname + '.json';
+				a.download = prefix + '_' + gname + '.json';
 				a.click();
 				URL.revokeObjectURL(url);
 				notify('💾 Saved as ' + a.download);
+			}
+
+			function saveQ1() {
+				downloadJSON(saveAll(), 'q1');
+			}
+
+			function saveQ2() {
+				downloadJSON(saveAll(), 'q2');
 			}
 
 			// ─── LOAD FROM FILE ──────────────────────────────────────────────────────────
@@ -1553,6 +1653,7 @@
 					try {
 						const data = JSON.parse(e.target.result);
 						applyQ1Data(data);
+						if (data.q2) applyQ2Data(data.q2);
 						validateAllJSON();
 						notify('✓ Loaded ' + file.name);
 					} catch (err) {
@@ -1563,11 +1664,29 @@
 				event.target.value = '';
 			}
 
+			function loadQ2FromFile(event) {
+				loadFromFile(event);
+			}
+
 			function applyQ1Data(data) {
 				document.getElementById('groupName').value = data.group || '';
 				document.getElementById('memberNames').value = data.members || '';
 				document.getElementById('gameName').value = data.gameName || '';
-				document.getElementById('gameGenre').value = data.gameGenre || '';
+
+				const genreSelect = document.getElementById('gameGenre');
+				const genreVal = data.gameGenre || '';
+				// If the saved genre isn't in the option list, add it
+				if (
+					genreVal &&
+					!Array.from(genreSelect.options).some((o) => o.value === genreVal)
+				) {
+					const opt = document.createElement('option');
+					opt.value = genreVal;
+					opt.textContent = genreVal;
+					genreSelect.appendChild(opt);
+				}
+				genreSelect.value = genreVal;
+
 				document.getElementById('gameDesc').value = data.gameDesc || '';
 
 				document.getElementById('entities-container').innerHTML = '';
@@ -1592,6 +1711,27 @@
 							body.previousElementSibling.classList.add('open-state');
 						}
 					}
+				});
+			}
+
+			function applyQ2Data(q2) {
+				document.getElementById('mechanicName').value = q2.mechanicName || '';
+				document.getElementById('mechanicDesc').value = q2.mechanicDesc || '';
+
+				document.getElementById('flow-steps-q2').innerHTML = '';
+				flowCount = 0;
+				(q2.steps || []).forEach((s) => {
+					addFlowStep();
+					const wrap = document.getElementById('fwrap-' + flowCount);
+					const card = wrap.querySelector('.flow-step-card');
+					const sel = card.querySelector('select');
+					sel.value = s.method || 'GET';
+					styleMethod(sel);
+					card.querySelector('.step-action-input').value = s.path || '';
+					card.querySelector('.step-desc-area').value = s.desc || '';
+					const tas = card.querySelectorAll('.step-code-area');
+					if (tas[0]) tas[0].value = s.request || '';
+					if (tas[1]) tas[1].value = s.response || '';
 				});
 			}
 
@@ -1694,7 +1834,7 @@
           ${['GET', 'POST', 'PUT', 'DELETE'].map((m) => `<option value="${m}">${m}</option>`).join('')}
         </select>
         <input class="step-action-input" type="text" placeholder="/api/endpoint…" />
-        <button class="del-btn" style="width:28px;height:28px;font-size:14px;margin-left:auto" onclick="document.getElementById('fwrap-${n}').remove()">×</button>
+        <button class="del-btn" style="width:28px;height:28px;font-size:14px;margin-left:auto" onclick="this.closest('.flow-step-wrap').remove();renumberFlowSteps()">×</button>
       </div>
       <div class="flow-step-body">
         <textarea class="step-desc-area" rows="2" placeholder="What happens in this step? Who sends this request and why?"></textarea>
@@ -1716,6 +1856,27 @@
 
 				// style initial method select
 				styleMethod(card.querySelector('select'));
+			}
+
+			// ─── RENUMBER FLOW STEPS ─────────────────────────────────────────────────────
+			function renumberFlowSteps() {
+				const wraps = document.querySelectorAll(
+					'#flow-steps-q2 .flow-step-wrap',
+				);
+				flowCount = wraps.length;
+				wraps.forEach((wrap, i) => {
+					const num = i + 1;
+					wrap.querySelector('.step-num').textContent = 'Step ' + num;
+					// Remove connector from first step, ensure it exists on others
+					const connector = wrap.querySelector('.flow-connector');
+					if (num === 1 && connector) connector.remove();
+					if (num > 1 && !connector) {
+						const c = document.createElement('div');
+						c.className = 'flow-connector';
+						c.innerHTML = '▼ &nbsp; NEXT API CALL';
+						wrap.insertBefore(c, wrap.firstChild);
+					}
+				});
 			}
 
 			// ─── GENERATE Q2 PREVIEW ─────────────────────────────────────────────────────
